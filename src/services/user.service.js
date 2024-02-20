@@ -1,50 +1,56 @@
 'use strict';
 
-let users = [];
-let usersCounter = 0;
+const { v4: uuidv4 } = require('uuid');
+const { client } = require('./db.js');
 
-const getAllUsers = () => users;
+// ===================== ===================== =====================
+const getAllUsers = async() => {
+  const result = await client.query(`
+    SELECT * FROM users
+  `);
 
-const getUserById = (id) => users.find(user => +user.id === +id);
-
-const createUser = (name) => {
-  const newUser = {
-    id: ++usersCounter,
-    name,
-  };
-
-  users.push(newUser);
-
-  return newUser;
+  return result.rows;
 };
 
-const removeUser = (id) => {
-  users = users.filter(user => user.id !== +id);
+const getUserById = async(id) => {
+  const result = await client.query(`
+    SELECT * FROM users
+    WHERE id = $1
+  `, [id]);
 
-  return users;
+  return result.rows[0] || null;
 };
 
-const updateUser = (id, name) => {
-  let newUser = {};
+const createUser = async(name) => {
+  const id = uuidv4();
 
-  users = users.map(user => {
-    if (user.id === +id) {
-      newUser = {
-        ...user,
-        name: name,
-      };
+  await client.query(`
+    INSERT INTO users (id, name)
+    VALUES ($1, $2)
+  `, [id, name]);
 
-      return newUser;
-    }
+  const result = await await getUserById(id);
 
-    return user;
-  });
+  return result;
+};
 
-  return newUser;
+const removeUser = async(id) => {
+  await client.query(`
+    DELETE FROM users
+    WHERE id = $1
+  `, [id]);
+};
+
+const updateUser = async(id, name) => {
+  await client.query(`
+    UPDATE users
+    SET name = $1
+    WHERE id = $2
+  `, [name, id]);
 };
 
 const resetUsers = () => {
-  users = [];
+  // writeUsers([]);
 };
 
 module.exports = {

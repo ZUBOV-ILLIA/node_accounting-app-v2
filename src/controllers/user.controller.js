@@ -2,34 +2,38 @@
 
 const userService = require('../services/user.service');
 
-const get = (req, res) => {
-  const allUsers = userService.getAllUsers();
+const get = async(req, res) => {
+  const allUsers = await userService.getAllUsers();
 
   res.send(allUsers);
 };
 
-const getOne = (req, res) => {
-  const user = userService.getUserById(req.params.id);
+const getOne = async(req, res) => {
+  const user = await userService.getUserById(req.params.id);
 
   if (!user) {
     res.status(404).send('user not found');
+
+    return;
   }
 
   res.send(user);
 };
 
-const create = (req, res) => {
+const create = async(req, res) => {
   if (req.body.name === '' || !req.body.name) {
     res.status(400).send('name required!');
 
     return;
   }
 
-  res.status(201).send(userService.createUser(req.body.name));
+  const newUser = await userService.createUser(req.body.name);
+
+  res.status(201).send(newUser);
 };
 
-const remove = (req, res) => {
-  const user = userService.getUserById(+req.params.id);
+const remove = async(req, res) => {
+  const user = await userService.getUserById(req.params.id);
 
   if (!user) {
     res.sendStatus(404);
@@ -37,12 +41,12 @@ const remove = (req, res) => {
     return;
   }
 
-  userService.removeUser(req.params.id);
+  await userService.removeUser(req.params.id);
 
   res.sendStatus(204);
 };
 
-const update = (req, res) => {
+const update = async(req, res) => {
   if (!req.params.id) {
     res.status(400).send('id required!');
   }
@@ -51,7 +55,7 @@ const update = (req, res) => {
     res.status(400).send('name required!');
   }
 
-  const user = userService.getUserById(req.params.id);
+  const user = await userService.getUserById(req.params.id);
 
   if (!user) {
     res.status(404).send('user not found');
@@ -59,7 +63,11 @@ const update = (req, res) => {
     return;
   }
 
-  res.send(userService.updateUser(req.params.id, req.body.name));
+  await userService.updateUser(req.params.id, req.body.name);
+
+  const updatedUser = await userService.getUserById(req.params.id);
+
+  res.send(updatedUser);
 };
 
 module.exports = {
