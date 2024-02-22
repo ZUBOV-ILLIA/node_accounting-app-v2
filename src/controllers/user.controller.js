@@ -3,7 +3,9 @@
 const userService = require('../services/user.service');
 
 const get = async(req, res) => {
-  const allUsers = await userService.getAllUsers();
+  let allUsers = await userService.getAllUsers();
+
+  allUsers = allUsers.map(user => userService.normalize(user));
 
   res.send(allUsers);
 };
@@ -17,7 +19,7 @@ const getOne = async(req, res) => {
     return;
   }
 
-  res.send(user);
+  res.send(userService.normalize(user));
 };
 
 const create = async(req, res) => {
@@ -29,7 +31,7 @@ const create = async(req, res) => {
 
   const newUser = await userService.createUser(req.body.name);
 
-  res.status(201).send(newUser);
+  res.status(201).send(userService.normalize(newUser));
 };
 
 const remove = async(req, res) => {
@@ -67,7 +69,7 @@ const update = async(req, res) => {
 
   const updatedUser = await userService.getUserById(req.params.id);
 
-  res.send(updatedUser);
+  res.send(userService.normalize(updatedUser));
 };
 
 module.exports = {
